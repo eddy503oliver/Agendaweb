@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
-import { authAPI, User } from '../services/api';
-import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { authAPI } from '../services/api';
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+}
 
 interface LoginProps {
   onLogin: (user: User, token: string) => void;
@@ -8,14 +13,23 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+    setError(''); // Clear error when user starts typing
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,63 +37,51 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     setError('');
 
     try {
-      let response;
-      
-      if (isLogin) {
-        response = await authAPI.login({
-          username: formData.username,
-          password: formData.password
-        });
-      } else {
-        response = await authAPI.register({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password
-        });
+      if (!isLogin && formData.password !== formData.confirmPassword) {
+        throw new Error('Las contraseñas no coinciden');
       }
 
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      onLogin(response.user, response.token);
-    } catch (err: any) {
-      setError(err.message);
+      if (isLogin) {
+        // Login
+        const response = await authAPI.login(formData.username, formData.password);
+        onLogin(response.user, response.token);
+      } else {
+        // Register
+        const response = await authAPI.register(formData.username, formData.email, formData.password);
+        onLogin(response.user, response.token);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error inesperado');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
   const toggleMode = () => {
     setIsLogin(!isLogin);
+    setFormData({
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    });
     setError('');
-    setFormData({ username: '', email: '', password: '' });
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h2>📚 Agenda Universitaria</h2>
-          <p>{isLogin ? 'Inicia sesión en tu cuenta' : 'Crea una nueva cuenta'}</p>
+          <h2>{isLogin ? 'Iniciar Sesión' : 'Registrarse'}</h2>
+          <p>{isLogin ? 'Accede a tu agenda universitaria' : 'Crea tu cuenta para comenzar'}</p>
         </div>
 
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="login-form">
+        <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Usuario</label>
+            <label htmlFor="username">Usuario</label>
             <input
               type="text"
+              id="username"
               name="username"
               value={formData.username}
               onChange={handleInputChange}
@@ -90,9 +92,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
           {!isLogin && (
             <div className="form-group">
-              <label>Email</label>
+              <label htmlFor="email">Email</label>
               <input
                 type="email"
+                id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
@@ -103,10 +106,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           )}
 
           <div className="form-group">
-            <label>Contraseña</label>
+            <label htmlFor="password">Contraseña</label>
             <div className="password-input">
               <input
                 type={showPassword ? 'text' : 'password'}
+                id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
@@ -118,23 +122,35 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? '👁️' : '👁️‍🗨️'}
               </button>
             </div>
           </div>
 
-          <button 
-            type="submit" 
-            className="login-button"
-            disabled={loading}
-          >
+          {!isLogin && (
+            <div className="form-group">
+              <label htmlFor="confirmPassword">Confirmar Contraseña</label>
+              <div className="password-input">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Confirma tu contraseña"
+                />
+              </div>
+            </div>
+          )}
+
+          {error && <div className="error-message">{error}</div>}
+
+          <button type="submit" className="login-button" disabled={loading}>
             {loading ? (
-              <div className="loading-spinner"></div>
+              <span className="loading-spinner">⏳</span>
             ) : (
-              <>
-                {isLogin ? <LogIn size={20} /> : <UserPlus size={20} />}
-                {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
-              </>
+              isLogin ? 'Iniciar Sesión' : 'Registrarse'
             )}
           </button>
         </form>
@@ -142,11 +158,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <div className="login-footer">
           <p>
             {isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
-            <button 
-              type="button" 
-              className="toggle-button"
-              onClick={toggleMode}
-            >
+            <button type="button" className="toggle-button" onClick={toggleMode}>
               {isLogin ? 'Regístrate aquí' : 'Inicia sesión aquí'}
             </button>
           </p>

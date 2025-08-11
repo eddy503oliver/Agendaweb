@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Class, Task, TabType } from './types';
-import { User } from './services/api';
 import ClassManager from './components/ClassManager';
 import TaskManager from './components/TaskManager';
+import Dashboard from './components/Dashboard';
 import Login from './components/Login';
-import { Plus, BookOpen, CheckSquare, ArrowLeft, LogOut, User as UserIcon } from 'lucide-react';
+import { Class, Task } from './types';
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+}
 
 function App() {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'classes' | 'tasks'>('dashboard');
+  const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('classes');
-  const [classes, setClasses] = useState<Class[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedClass, setSelectedClass] = useState<Class | null>(null);
 
   // Check for existing authentication on app load
   useEffect(() => {
@@ -20,28 +23,34 @@ function App() {
     const savedUser = localStorage.getItem('user');
     
     if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      try {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Error parsing saved user data:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
-  const handleLogin = (user: User, token: string) => {
-    setUser(user);
-    setToken(token);
+  const handleLogin = (userData: User, userToken: string) => {
+    setUser(userData);
+    setToken(userToken);
+    localStorage.setItem('token', userToken);
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const handleLogout = () => {
     setUser(null);
     setToken(null);
-    setClasses([]);
-    setTasks([]);
     setSelectedClass(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   };
 
-  const handleClassClick = (cls: Class) => {
-    setSelectedClass(cls);
+  const handleClassClick = (classData: Class) => {
+    setSelectedClass(classData);
     setActiveTab('tasks');
   };
 
@@ -50,89 +59,74 @@ function App() {
     setActiveTab('classes');
   };
 
-  const filteredTasks = selectedClass 
-    ? tasks.filter(task => task.classId === selectedClass.id)
-    : tasks;
-
-  // Show login if not authenticated
+  // If user is not authenticated, show login
   if (!user || !token) {
     return <Login onLogin={handleLogin} />;
   }
 
   return (
-    <div className="container">
-      <div className="header">
+    <div className="app">
+      <header className="header">
         <div className="header-content">
-          <div>
-            <h1>📚 Agenda Universitaria</h1>
-            <p>Gestiona tus horarios de clase y tareas de manera eficiente</p>
-          </div>
+          <h1>📚 Agenda Universitaria</h1>
           <div className="user-info">
             <div className="user-details">
-              <UserIcon size={20} />
-              <span>{user.username}</span>
+              <span>👤 {user.username}</span>
+              <small>{user.email}</small>
             </div>
-            <button className="logout-button" onClick={handleLogout}>
-              <LogOut size={16} />
+            <button onClick={handleLogout} className="logout-button">
               Cerrar Sesión
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
       {selectedClass && (
         <div className="class-filter-banner">
-          <button 
-            className="back-button"
-            onClick={handleBackToClasses}
-          >
-            <ArrowLeft size={16} />
-            Volver a Horarios
+          <button onClick={handleBackToClasses} className="back-button">
+            ← Volver a Clases
           </button>
           <div className="selected-class-info">
-            <span style={{ color: selectedClass.color }}>📚</span>
-            <span className="selected-class-name">{selectedClass.name}</span>
-            <span className="selected-class-professor">- {selectedClass.professor}</span>
+            <div className="selected-class-name">{selectedClass.name}</div>
+            <div className="selected-class-professor">
+              {selectedClass.professor && `Prof. ${selectedClass.professor}`}
+            </div>
           </div>
         </div>
       )}
 
-      <div className="tabs">
+      <nav className="tab-navigation">
         <button
-          className={`tab ${activeTab === 'classes' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveTab('classes');
-            setSelectedClass(null);
-          }}
+          className={`tab-button ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dashboard')}
         >
-          <BookOpen size={20} />
-          Horarios de Clase
+          📊 Dashboard
         </button>
         <button
-          className={`tab ${activeTab === 'tasks' ? 'active' : ''}`}
+          className={`tab-button ${activeTab === 'classes' ? 'active' : ''}`}
+          onClick={() => setActiveTab('classes')}
+        >
+          📅 Horarios de Clase
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'tasks' ? 'active' : ''}`}
           onClick={() => setActiveTab('tasks')}
         >
-          <CheckSquare size={20} />
-          {selectedClass ? `Tareas de ${selectedClass.name}` : 'Tareas'}
+          ✅ Tareas
         </button>
-      </div>
+      </nav>
 
-      <div className="content">
-        {activeTab === 'classes' ? (
-          <ClassManager 
-            classes={classes} 
-            setClasses={setClasses}
-            onClassClick={handleClassClick}
-          />
-        ) : (
-          <TaskManager 
-            tasks={filteredTasks} 
-            setTasks={setTasks} 
-            classes={classes}
-            selectedClass={selectedClass}
-          />
+      <main className="main-content">
+        {activeTab === 'dashboard' && (
+          <Dashboard selectedClass={selectedClass} />
         )}
-      </div>
+        {activeTab === 'classes' && (
+          <ClassManager onClassClick={handleClassClick} />
+        )}
+        {activeTab === 'tasks' && (
+          <TaskManager selectedClass={selectedClass} />
+        )}
+      </main>
     </div>
   );
 }

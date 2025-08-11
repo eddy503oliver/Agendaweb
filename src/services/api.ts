@@ -1,204 +1,249 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:5001/api';
 
-export interface User {
+// Types for API responses
+interface ApiResponse<T> {
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+interface User {
   id: number;
   username: string;
   email: string;
 }
 
-export interface AuthResponse {
-  message: string;
+interface AuthResponse {
   token: string;
   user: User;
+  message: string;
 }
 
-export interface LoginRequest {
-  username: string;
-  password: string;
+interface Class {
+  id: number;
+  name: string;
+  professor?: string;
+  day: string;
+  start_time: string;
+  end_time: string;
+  classroom?: string;
+  created_at: string;
 }
 
-export interface RegisterRequest {
-  username: string;
-  email: string;
-  password: string;
+interface Task {
+  id: number;
+  title: string;
+  description?: string;
+  due_date?: string;
+  class_id?: number;
+  class_name?: string;
+  completed: boolean;
+  created_at: string;
 }
-
-// Auth API
-export const authAPI = {
-  async login(credentials: LoginRequest): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error en el login');
-    }
-
-    return response.json();
-  },
-
-  async register(userData: RegisterRequest): Promise<AuthResponse> {
-    const response = await fetch(`${API_BASE_URL}/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error en el registro');
-    }
-
-    return response.json();
-  },
-};
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    ...(token && { Authorization: `Bearer ${token}` })
   };
+};
+
+// Authentication API
+export const authAPI = {
+  register: async (username: string, email: string, password: string): Promise<AuthResponse> => {
+    console.log('Attempting to register user:', { username, email });
+    console.log('API URL:', `${API_BASE_URL}/auth/register`);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
+      const data = await response.json();
+      console.log('Response data:', data);
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Error en el registro');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Fetch error:', error);
+      throw error;
+    }
+  },
+
+  login: async (username: string, password: string): Promise<AuthResponse> => {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Error en el login');
+    }
+
+    return data;
+  },
 };
 
 // Classes API
 export const classesAPI = {
-  async getAll(): Promise<any[]> {
+  getAll: async (): Promise<Class[]> => {
     const response = await fetch(`${API_BASE_URL}/classes`, {
       headers: getAuthHeaders(),
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al obtener clases');
+      throw new Error(data.error || 'Error al obtener las clases');
     }
 
-    return response.json();
+    return data;
   },
 
-  async create(classData: any): Promise<any> {
+  create: async (classData: Omit<Class, 'id' | 'created_at'>): Promise<{ id: number; message: string }> => {
     const response = await fetch(`${API_BASE_URL}/classes`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(classData),
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al crear clase');
+      throw new Error(data.error || 'Error al crear la clase');
     }
 
-    return response.json();
+    return data;
   },
 
-  async update(id: string, classData: any): Promise<any> {
+  update: async (id: number, classData: Partial<Class>): Promise<{ message: string }> => {
     const response = await fetch(`${API_BASE_URL}/classes/${id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(classData),
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al actualizar clase');
+      throw new Error(data.error || 'Error al actualizar la clase');
     }
 
-    return response.json();
+    return data;
   },
 
-  async delete(id: string): Promise<void> {
+  delete: async (id: number): Promise<{ message: string }> => {
     const response = await fetch(`${API_BASE_URL}/classes/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al eliminar clase');
+      throw new Error(data.error || 'Error al eliminar la clase');
     }
+
+    return data;
   },
 };
 
 // Tasks API
 export const tasksAPI = {
-  async getAll(classId?: string): Promise<any[]> {
+  getAll: async (classId?: number): Promise<Task[]> => {
     const url = classId 
       ? `${API_BASE_URL}/tasks?classId=${classId}`
       : `${API_BASE_URL}/tasks`;
-    
+      
     const response = await fetch(url, {
       headers: getAuthHeaders(),
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al obtener tareas');
+      throw new Error(data.error || 'Error al obtener las tareas');
     }
 
-    return response.json();
+    return data;
   },
 
-  async create(taskData: any): Promise<any> {
+  create: async (taskData: Omit<Task, 'id' | 'created_at' | 'completed'>): Promise<{ id: number; message: string }> => {
     const response = await fetch(`${API_BASE_URL}/tasks`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(taskData),
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al crear tarea');
+      throw new Error(data.error || 'Error al crear la tarea');
     }
 
-    return response.json();
+    return data;
   },
 
-  async update(id: string, taskData: any): Promise<any> {
+  update: async (id: number, taskData: Partial<Task>): Promise<{ message: string }> => {
     const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(taskData),
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al actualizar tarea');
+      throw new Error(data.error || 'Error al actualizar la tarea');
     }
 
-    return response.json();
+    return data;
   },
 
-  async delete(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al eliminar tarea');
-    }
-  },
-
-  async toggleComplete(id: string): Promise<{ completed: boolean }> {
+  toggleComplete: async (id: number): Promise<{ message: string }> => {
     const response = await fetch(`${API_BASE_URL}/tasks/${id}/toggle`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Error al cambiar estado de tarea');
+      throw new Error(data.error || 'Error al cambiar el estado de la tarea');
     }
 
-    return response.json();
+    return data;
+  },
+
+  delete: async (id: number): Promise<{ message: string }> => {
+    const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Error al eliminar la tarea');
+    }
+
+    return data;
   },
 };

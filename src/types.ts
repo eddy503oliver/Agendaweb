@@ -1,22 +1,23 @@
 export interface Class {
-  id: string;
+  id: number;
   name: string;
-  professor: string;
+  professor?: string;
   day: string;
-  startTime: string;
-  endTime: string;
-  classroom: string;
-  color: string;
+  start_time: string;
+  end_time: string;
+  classroom?: string;
+  created_at: string;
 }
 
 export interface Task {
-  id: string;
+  id: number;
   title: string;
-  description: string;
-  dueDate: string;
-  priority: 'low' | 'medium' | 'high';
+  description?: string;
+  due_date?: string;
+  class_id?: number;
+  class_name?: string;
   completed: boolean;
-  classId?: string; // Opcional: relacionar tarea con una clase específica
+  created_at: string;
 }
 
-export type TabType = 'classes' | 'tasks'; 
+export type TabType = 'dashboard' | 'classes' | 'tasks'; 

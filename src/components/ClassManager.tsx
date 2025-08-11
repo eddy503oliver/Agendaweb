@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Class } from '../types';
 import { classesAPI } from '../services/api';
-import { Plus, Edit, Trash2, X } from 'lucide-react';
 
 interface ClassManagerProps {
-  classes: Class[];
-  setClasses: React.Dispatch<React.SetStateAction<Class[]>>;
-  onClassClick?: (cls: Class) => void;
+  onClassClick: (classData: Class) => void;
 }
 
-const ClassManager: React.FC<ClassManagerProps> = ({ classes, setClasses, onClassClick }) => {
-  const [showForm, setShowForm] = useState(false);
-  const [editingClass, setEditingClass] = useState<Class | null>(null);
-  const [loading, setLoading] = useState(false);
+const ClassManager: React.FC<ClassManagerProps> = ({ onClassClick }) => {
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    professor: '',
+    day: 'Lunes',
+    startTime: '',
+    endTime: '',
+    classroom: ''
+  });
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
   // Load classes from API
   useEffect(() => {
@@ -25,180 +32,168 @@ const ClassManager: React.FC<ClassManagerProps> = ({ classes, setClasses, onClas
       setLoading(true);
       const data = await classesAPI.getAll();
       setClasses(data);
-    } catch (err: any) {
-      setError(err.message);
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar las clases');
     } finally {
       setLoading(false);
     }
   };
-  const [formData, setFormData] = useState({
-    name: '',
-    professor: '',
-    day: 'Lunes',
-    startTime: '',
-    endTime: '',
-    classroom: '',
-    color: '#667eea'
-  });
-
-  const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
     
+    if (!formData.name || !formData.startTime || !formData.endTime) {
+      setError('Nombre, hora de inicio y hora de fin son obligatorios');
+      return;
+    }
+
     try {
-      if (editingClass) {
-        // Editar clase existente
-        const updatedClass = await classesAPI.update(editingClass.id, formData);
-        setClasses(classes.map(cls => 
-          cls.id === editingClass.id ? updatedClass : cls
-        ));
-        setEditingClass(null);
+      if (editingId) {
+        await classesAPI.update(editingId, {
+          name: formData.name,
+          professor: formData.professor,
+          day: formData.day,
+          start_time: formData.startTime,
+          end_time: formData.endTime,
+          classroom: formData.classroom
+        });
       } else {
-        // Agregar nueva clase
-        const newClass = await classesAPI.create(formData);
-        setClasses([...classes, newClass]);
+        await classesAPI.create({
+          name: formData.name,
+          professor: formData.professor,
+          day: formData.day,
+          start_time: formData.startTime,
+          end_time: formData.endTime,
+          classroom: formData.classroom
+        });
       }
-      
-      resetForm();
-      setShowForm(false);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+
+      setFormData({
+        name: '',
+        professor: '',
+        day: 'Lunes',
+        startTime: '',
+        endTime: '',
+        classroom: ''
+      });
+      setEditingId(null);
+      await loadClasses();
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al guardar la clase');
     }
   };
 
-  const handleEdit = (cls: Class) => {
-    setEditingClass(cls);
+  const handleEdit = (classData: Class) => {
     setFormData({
-      name: cls.name,
-      professor: cls.professor,
-      day: cls.day,
-      startTime: cls.startTime,
-      endTime: cls.endTime,
-      classroom: cls.classroom,
-      color: cls.color
+      name: classData.name,
+      professor: classData.professor || '',
+      day: classData.day,
+      startTime: classData.start_time,
+      endTime: classData.end_time,
+      classroom: classData.classroom || ''
     });
-    setShowForm(true);
+    setEditingId(classData.id);
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta clase?')) {
-      try {
-        setLoading(true);
-        await classesAPI.delete(id);
-        setClasses(classes.filter(cls => cls.id !== id));
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
+  const handleDelete = async (id: number) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta clase?')) {
+      return;
+    }
+
+    try {
+      await classesAPI.delete(id);
+      await loadClasses();
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar la clase');
     }
   };
 
-  const resetForm = () => {
+  const handleCancel = () => {
     setFormData({
       name: '',
       professor: '',
       day: 'Lunes',
       startTime: '',
       endTime: '',
-      classroom: '',
-      color: '#667eea'
+      classroom: ''
     });
+    setEditingId(null);
   };
 
-  const cancelForm = () => {
-    setShowForm(false);
-    setEditingClass(null);
-    resetForm();
+  const handleClassClick = (classData: Class) => {
+    onClassClick(classData);
   };
+
+  if (loading) {
+    return <div className="loading">Cargando clases...</div>;
+  }
 
   return (
-    <div>
-      {error && (
-        <div className="error-message">
-          {error}
-        </div>
-      )}
-
-      <button 
-        className="add-button"
-        onClick={() => setShowForm(true)}
-        disabled={loading}
-      >
-        <Plus size={20} />
-        {editingClass ? 'Editar Clase' : 'Agregar Nueva Clase'}
-      </button>
-
-      {showForm && (
-        <form className="form" onSubmit={handleSubmit}>
+    <div className="class-manager">
+      <div className="form-section">
+        <h3>{editingId ? 'Editar Clase' : 'Agregar Nueva Clase'}</h3>
+        
+        {error && <div className="error-message">{error}</div>}
+        
+        <form onSubmit={handleSubmit} className="form">
           <div className="form-row">
             <div className="form-group">
-              <label>Nombre de la Clase</label>
+              <label htmlFor="name">Nombre de la Clase *</label>
               <input
                 type="text"
+                id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 required
-                placeholder="Ej: Matemáticas Avanzadas"
+                placeholder="Ej: Matemáticas"
               />
             </div>
+            
             <div className="form-group">
-              <label>Profesor</label>
+              <label htmlFor="professor">Profesor</label>
               <input
                 type="text"
+                id="professor"
                 value={formData.professor}
                 onChange={(e) => setFormData({...formData, professor: e.target.value})}
-                required
-                placeholder="Nombre del profesor"
+                placeholder="Ej: Dr. García"
               />
             </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label>Día</label>
+              <label htmlFor="day">Día</label>
               <select
+                id="day"
                 value={formData.day}
                 onChange={(e) => setFormData({...formData, day: e.target.value})}
-                required
               >
                 {days.map(day => (
                   <option key={day} value={day}>{day}</option>
                 ))}
               </select>
             </div>
+            
             <div className="form-group">
-              <label>Aula</label>
-              <input
-                type="text"
-                value={formData.classroom}
-                onChange={(e) => setFormData({...formData, classroom: e.target.value})}
-                required
-                placeholder="Ej: Aula 101"
-              />
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Hora de Inicio</label>
+              <label htmlFor="startTime">Hora de Inicio *</label>
               <input
                 type="time"
+                id="startTime"
                 value={formData.startTime}
                 onChange={(e) => setFormData({...formData, startTime: e.target.value})}
                 required
               />
             </div>
+            
             <div className="form-group">
-              <label>Hora de Fin</label>
+              <label htmlFor="endTime">Hora de Fin *</label>
               <input
                 type="time"
+                id="endTime"
                 value={formData.endTime}
                 onChange={(e) => setFormData({...formData, endTime: e.target.value})}
                 required
@@ -207,93 +202,79 @@ const ClassManager: React.FC<ClassManagerProps> = ({ classes, setClasses, onClas
           </div>
 
           <div className="form-group">
-            <label>Color</label>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              {colors.map(color => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => setFormData({...formData, color})}
-                  style={{
-                    width: '30px',
-                    height: '30px',
-                    borderRadius: '50%',
-                    backgroundColor: color,
-                    border: formData.color === color ? '3px solid #333' : '2px solid #ddd',
-                    cursor: 'pointer'
-                  }}
-                />
-              ))}
-            </div>
+            <label htmlFor="classroom">Aula</label>
+            <input
+              type="text"
+              id="classroom"
+              value={formData.classroom}
+              onChange={(e) => setFormData({...formData, classroom: e.target.value})}
+              placeholder="Ej: Aula 101"
+            />
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'Guardando...' : (editingClass ? 'Actualizar Clase' : 'Agregar Clase')}
+            <button type="submit" className="btn btn-primary">
+              {editingId ? 'Actualizar' : 'Agregar'} Clase
             </button>
-            <button type="button" className="btn btn-secondary" onClick={cancelForm} disabled={loading}>
-              <X size={16} />
-              Cancelar
-            </button>
+            {editingId && (
+              <button type="button" onClick={handleCancel} className="btn btn-secondary">
+                Cancelar
+              </button>
+            )}
           </div>
         </form>
-      )}
+      </div>
 
-      {classes.length === 0 ? (
-        <div className="empty-state">
-          <h3>No hay clases registradas</h3>
-          <p>Agrega tu primera clase para comenzar a organizar tu horario</p>
-        </div>
-      ) : (
-        <div className="items-grid">
-          {classes.map(cls => (
-            <div 
-              key={cls.id} 
-              className="item-card clickable-class"
-              style={{ borderLeftColor: cls.color, borderLeftWidth: '4px' }}
-              onClick={() => onClassClick && onClassClick(cls)}
-            >
-              <div className="item-header">
-                <div>
-                  <div className="item-title">{cls.name}</div>
-                  <div className="item-subtitle">{cls.professor}</div>
+      <div className="classes-section">
+        <h3>Horarios de Clase</h3>
+        
+        {classes.length === 0 ? (
+          <p className="no-data">No hay clases registradas. ¡Agrega tu primera clase!</p>
+        ) : (
+          <div className="classes-grid">
+            {classes.map((classData) => (
+              <div key={classData.id} className="class-card clickable-class" onClick={() => handleClassClick(classData)}>
+                <div className="class-header">
+                  <h4>{classData.name}</h4>
+                  <div className="class-actions">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(classData);
+                      }}
+                      className="btn-icon"
+                      title="Editar"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(classData.id);
+                      }}
+                      className="btn-icon delete"
+                      title="Eliminar"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </div>
-                <div className="item-actions">
-                  <button 
-                    className="action-btn"
-                    onClick={() => handleEdit(cls)}
-                    title="Editar"
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button 
-                    className="action-btn"
-                    onClick={() => handleDelete(cls.id)}
-                    title="Eliminar"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="item-details">
-                <div className="detail-row">
-                  <span className="detail-label">Día:</span>
-                  <span className="detail-value">{cls.day}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Horario:</span>
-                  <span className="detail-value">{cls.startTime} - {cls.endTime}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="detail-label">Aula:</span>
-                  <span className="detail-value">{cls.classroom}</span>
+                
+                <div className="class-details">
+                  {classData.professor && (
+                    <p><strong>Profesor:</strong> {classData.professor}</p>
+                  )}
+                  <p><strong>Día:</strong> {classData.day}</p>
+                  <p><strong>Horario:</strong> {classData.start_time} - {classData.end_time}</p>
+                  {classData.classroom && (
+                    <p><strong>Aula:</strong> {classData.classroom}</p>
+                  )}
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
