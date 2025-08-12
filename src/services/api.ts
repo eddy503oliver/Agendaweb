@@ -1,5 +1,5 @@
 // Configuración de la API para desarrollo y producción
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const API_BASE_URL = isDevelopment 
   ? 'http://localhost:5001/api'
   : 'https://agendaweb-production.up.railway.app/api'; // 👈 URL real de Railway
@@ -53,6 +53,9 @@ export const authAPI = {
   register: async (username: string, email: string, password: string): Promise<AuthResponse> => {
     console.log('Attempting to register user:', { username, email });
     console.log('API URL:', `${API_BASE_URL}/auth/register`);
+    console.log('Full URL:', `${API_BASE_URL}/auth/register`);
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('isDevelopment:', isDevelopment);
     
     try {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
@@ -76,6 +79,11 @@ export const authAPI = {
       return data;
     } catch (error) {
       console.error('Fetch error:', error);
+      console.error('Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : 'No stack trace'
+      });
       throw error;
     }
   },
