@@ -17,37 +17,57 @@ function App() {
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Check for existing authentication on app load
   useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    
-    if (savedToken && savedUser) {
-      try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing saved user data:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+    try {
+      console.log('App loading...');
+      const savedToken = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
+      
+      console.log('Saved token:', savedToken ? 'exists' : 'none');
+      console.log('Saved user:', savedUser ? 'exists' : 'none');
+      
+      if (savedToken && savedUser) {
+        try {
+          setToken(savedToken);
+          setUser(JSON.parse(savedUser));
+        } catch (error) {
+          console.error('Error parsing saved user data:', error);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
       }
+    } catch (error) {
+      console.error('Error in App useEffect:', error);
+      setError('Error loading application');
     }
   }, []);
 
   const handleLogin = (userData: User, userToken: string) => {
-    setUser(userData);
-    setToken(userToken);
-    localStorage.setItem('token', userToken);
-    localStorage.setItem('user', JSON.stringify(userData));
+    try {
+      setUser(userData);
+      setToken(userToken);
+      localStorage.setItem('token', userToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+    } catch (error) {
+      console.error('Error in handleLogin:', error);
+      setError('Error during login');
+    }
   };
 
   const handleLogout = () => {
-    setUser(null);
-    setToken(null);
-    setSelectedClass(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    try {
+      setUser(null);
+      setToken(null);
+      setSelectedClass(null);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    } catch (error) {
+      console.error('Error in handleLogout:', error);
+      setError('Error during logout');
+    }
   };
 
   const handleClassClick = (classData: Class) => {
@@ -59,6 +79,17 @@ function App() {
     setSelectedClass(null);
     setActiveTab('classes');
   };
+
+  // Show error if there's one
+  if (error) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h2>Error en la aplicación</h2>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Recargar página</button>
+      </div>
+    );
+  }
 
   // If user is not authenticated, show login
   if (!user || !token) {

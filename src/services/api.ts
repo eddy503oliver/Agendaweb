@@ -2,7 +2,7 @@
 const isDevelopment = process.env.NODE_ENV === 'development';
 const API_BASE_URL = isDevelopment 
   ? 'http://localhost:5001/api'
-  : 'https://agenda-backend.onrender.com/api'; // 👈 Cambia esto por tu URL real de Render/Railway/Heroku
+  : 'https://agenda-backend-onnc.onrender.com/api'; // 👈 URL corregida con /api
 
 // Types for API responses
 interface User {
