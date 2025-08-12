@@ -45,6 +45,14 @@ function authenticateToken(req, res, next) {
   });
 }
 
+// Admin middleware
+function requireAdmin(req, res, next) {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}
+
 // Authentication routes
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -63,15 +71,25 @@ app.post('/api/auth/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await pool.query(
-      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id',
-      [username, email, hashedPassword]
+      'INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, role',
+      [username, email, hashedPassword, 'user'] // Default role is 'user'
     );
 
-    const token = jwt.sign({ id: result.rows[0].id, username }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ 
+      id: result.rows[0].id, 
+      username, 
+      role: result.rows[0].role 
+    }, JWT_SECRET, { expiresIn: '24h' });
+    
     res.status(201).json({
       message: 'User created successfully',
       token,
-      user: { id: result.rows[0].id, username, email }
+      user: { 
+        id: result.rows[0].id, 
+        username, 
+        email,
+        role: result.rows[0].role
+      }
     });
   } catch (error) {
     console.error('Register error:', error);
@@ -103,11 +121,21 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ 
+      id: user.id, 
+      username: user.username,
+      role: user.role
+    }, JWT_SECRET, { expiresIn: '24h' });
+    
     res.json({
       message: 'Login successful',
       token,
-      user: { id: user.id, username: user.username, email: user.email }
+      user: { 
+        id: user.id, 
+        username: user.username, 
+        email: user.email,
+        role: user.role
+      }
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -289,6 +317,64 @@ app.delete('/api/tasks/:id', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Error deleting task:', error);
     res.status(500).json({ error: 'Error deleting task' });
+  }
+});
+
+// Admin routes
+app.get('/api/admin/users', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Error fetching users' });
+  }
+});
+
+app.get('/api/admin/stats', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const [usersCount, classesCount, tasksCount] = await Promise.all([
+      pool.query('SELECT COUNT(*) as count FROM users'),
+      pool.query('SELECT COUNT(*) as count FROM classes'),
+      pool.query('SELECT COUNT(*) as count FROM tasks')
+    ]);
+
+    res.json({
+      totalUsers: parseInt(usersCount.rows[0].count),
+      totalClasses: parseInt(classesCount.rows[0].count),
+      totalTasks: parseInt(tasksCount.rows[0].count)
+    });
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    res.status(500).json({ error: 'Error fetching stats' });
+  }
+});
+
+app.put('/api/admin/users/:id/role', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { role } = req.body;
+    const userId = req.params.id;
+
+    if (!['user', 'admin'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role. Must be "user" or "admin"' });
+    }
+
+    const result = await pool.query(
+      'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, username, email, role',
+      [role, userId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ 
+      message: 'User role updated successfully',
+      user: result.rows[0]
+    });
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ error: 'Error updating user role' });
   }
 });
 
