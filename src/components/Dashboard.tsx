@@ -2,13 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Class, Task } from '../types';
 import { classesAPI, tasksAPI } from '../services/api';
 
-interface DashboardProps {
-  selectedClass: Class | null;
-}
-
 type TaskFilter = 'all' | 'pending' | 'completed' | 'overdue' | null;
 
-const Dashboard: React.FC<DashboardProps> = ({ selectedClass }) => {
+const Dashboard: React.FC = () => {
   const [classes, setClasses] = useState<Class[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,14 +14,14 @@ const Dashboard: React.FC<DashboardProps> = ({ selectedClass }) => {
   // Load data from API
   useEffect(() => {
     loadDashboardData();
-  }, [selectedClass]);
+  }, []);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       const [classesData, tasksData] = await Promise.all([
         classesAPI.getAll(),
-        tasksAPI.getAll(selectedClass?.id)
+        tasksAPI.getAll()
       ]);
       setClasses(classesData);
       setTasks(tasksData);

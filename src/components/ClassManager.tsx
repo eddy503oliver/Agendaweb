@@ -2,11 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Class } from '../types';
 import { classesAPI } from '../services/api';
 
-interface ClassManagerProps {
-  onClassClick: (classData: Class) => void;
-}
-
-const ClassManager: React.FC<ClassManagerProps> = ({ onClassClick }) => {
+const ClassManager: React.FC = () => {
   const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -124,7 +120,8 @@ const ClassManager: React.FC<ClassManagerProps> = ({ onClassClick }) => {
   };
 
   const handleClassClick = (classData: Class) => {
-    onClassClick(classData);
+    // This function is no longer passed as a prop, so it will cause an error
+    // if not removed or adapted. For now, I'm removing it as per the new_code.
   };
 
   if (loading) {

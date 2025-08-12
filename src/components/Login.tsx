@@ -8,7 +8,8 @@ interface User {
 }
 
 interface LoginProps {
-  onLogin: (user: User, token: string) => void;
+  onLogin: (token: string) => void;
+  error?: string | null;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -44,11 +45,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       if (isLogin) {
         // Login
         const response = await authAPI.login(formData.username, formData.password);
-        onLogin(response.user, response.token);
+        onLogin(response.token);
       } else {
         // Register
         const response = await authAPI.register(formData.username, formData.email, formData.password);
-        onLogin(response.user, response.token);
+        onLogin(response.token);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error inesperado');

@@ -253,3 +253,114 @@ export const tasksAPI = {
     return data;
   },
 };
+
+// Admin API
+export const adminAPI = {
+  getUsers: async (): Promise<any[]> => {
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
+      headers: getAuthHeaders(),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Error al obtener usuarios');
+    }
+
+    return data;
+  },
+
+  getStats: async (): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/admin/stats`, {
+      headers: getAuthHeaders(),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Error al obtener estadísticas');
+    }
+
+    return data;
+  },
+
+  updateUserRole: async (userId: number, role: string): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/role`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ role }),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Error al actualizar rol');
+    }
+
+    return data;
+  },
+};
+
+// Generic API helper
+export const api = {
+  get: async (endpoint: string): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      headers: getAuthHeaders(),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Error en la petición');
+    }
+
+    return data;
+  },
+
+  post: async (endpoint: string, body: any): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Error en la petición');
+    }
+
+    return data;
+  },
+
+  put: async (endpoint: string, body: any): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Error en la petición');
+    }
+
+    return data;
+  },
+
+  delete: async (endpoint: string): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Error en la petición');
+    }
+
+    return data;
+  },
+};

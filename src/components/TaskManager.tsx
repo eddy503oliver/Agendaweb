@@ -2,11 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { tasksAPI, classesAPI } from '../services/api';
 import { Task, Class } from '../types';
 
-interface TaskManagerProps {
-  selectedClass: Class | null;
-}
-
-const TaskManager: React.FC<TaskManagerProps> = ({ selectedClass }) => {
+const TaskManager: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
@@ -15,20 +11,20 @@ const TaskManager: React.FC<TaskManagerProps> = ({ selectedClass }) => {
     title: '',
     description: '',
     dueDate: '',
-    classId: selectedClass?.id || ''
+    classId: ''
   });
   const [editingId, setEditingId] = useState<number | null>(null);
 
   // Load tasks and classes from API
   useEffect(() => {
     loadData();
-  }, [selectedClass]);
+  }, []);
 
   const loadData = async () => {
     try {
       setLoading(true);
       const [tasksData, classesData] = await Promise.all([
-        tasksAPI.getAll(selectedClass?.id),
+        tasksAPI.getAll(),
         classesAPI.getAll()
       ]);
       setTasks(tasksData);
@@ -70,7 +66,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ selectedClass }) => {
         title: '',
         description: '',
         dueDate: '',
-        classId: selectedClass?.id || ''
+        classId: ''
       });
       setEditingId(null);
       await loadData();
@@ -119,7 +115,7 @@ const TaskManager: React.FC<TaskManagerProps> = ({ selectedClass }) => {
       title: '',
       description: '',
       dueDate: '',
-      classId: selectedClass?.id || ''
+      classId: ''
     });
     setEditingId(null);
   };
@@ -170,23 +166,21 @@ const TaskManager: React.FC<TaskManagerProps> = ({ selectedClass }) => {
               />
             </div>
 
-            {!selectedClass && (
-              <div className="form-group">
-                <label htmlFor="classId">Clase Relacionada</label>
-                <select
-                  id="classId"
-                  value={formData.classId}
-                  onChange={(e) => setFormData({...formData, classId: e.target.value})}
-                >
-                  <option value="">Sin clase específica</option>
-                  {classes.map(classData => (
-                    <option key={classData.id} value={classData.id}>
-                      {classData.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div className="form-group">
+              <label htmlFor="classId">Clase Relacionada</label>
+              <select
+                id="classId"
+                value={formData.classId}
+                onChange={(e) => setFormData({...formData, classId: e.target.value})}
+              >
+                <option value="">Sin clase específica</option>
+                {classes.map(classData => (
+                  <option key={classData.id} value={classData.id}>
+                    {classData.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="form-actions">
@@ -204,15 +198,12 @@ const TaskManager: React.FC<TaskManagerProps> = ({ selectedClass }) => {
 
       <div className="tasks-section">
         <h3>
-          {selectedClass ? `Tareas de ${selectedClass.name}` : 'Todas las Tareas'}
+          Todas las Tareas
         </h3>
         
         {tasks.length === 0 ? (
           <p className="no-data">
-            {selectedClass 
-              ? `No hay tareas para ${selectedClass.name}. ¡Agrega tu primera tarea!`
-              : 'No hay tareas registradas. ¡Agrega tu primera tarea!'
-            }
+            No hay tareas registradas. ¡Agrega tu primera tarea!
           </p>
         ) : (
           <div className="tasks-grid">
