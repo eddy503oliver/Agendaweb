@@ -3,12 +3,22 @@ const { Pool } = require('pg');
 // Configuración de la base de datos PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  max: 20, // Máximo número de conexiones
+  idleTimeoutMillis: 30000, // Tiempo de inactividad
+  connectionTimeoutMillis: 2000, // Tiempo de conexión
 });
 
 // Función para inicializar las tablas
 async function initializeDatabase() {
   try {
+    console.log('Attempting to connect to database...');
+    console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+    
+    // Test connection first
+    await pool.query('SELECT NOW()');
+    console.log('Database connection successful');
+
     // Crear tabla de usuarios
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -55,7 +65,22 @@ async function initializeDatabase() {
     console.log('Database tables initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
+    console.error('Error details:', {
+      code: error.code,
+      message: error.message,
+      stack: error.stack
+    });
+    
+    // Retry after 5 seconds
+    console.log('Retrying database connection in 5 seconds...');
+    setTimeout(initializeDatabase, 5000);
   }
 }
+
+// Handle pool errors
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
+});
 
 module.exports = { pool, initializeDatabase };
