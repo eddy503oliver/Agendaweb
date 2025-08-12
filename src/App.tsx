@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import Login from './components/Login';
 import ClassManager from './components/ClassManager';
 import TaskManager from './components/TaskManager';
 import Dashboard from './components/Dashboard';
-import Login from './components/Login';
-import { Class, Task } from './types';
+import { Class } from './types';
+import './index.css';
 
 interface User {
   id: number;

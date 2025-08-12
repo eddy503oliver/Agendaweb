@@ -1,16 +1,10 @@
 // Configuración de la API para desarrollo y producción
-const isDevelopment = import.meta.env.DEV;
+const isDevelopment = process.env.NODE_ENV === 'development';
 const API_BASE_URL = isDevelopment 
   ? 'http://localhost:5001/api'
   : 'https://tu-backend-url.com/api'; // 👈 Cambia esto por tu URL de producción
 
 // Types for API responses
-interface ApiResponse<T> {
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
 interface User {
   id: number;
   username: string;

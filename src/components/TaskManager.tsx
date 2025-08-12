@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Task, Class } from '../types';
 import { tasksAPI, classesAPI } from '../services/api';
-import { Plus, Edit, Trash2, X, CheckCircle, Circle } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { Task, Class } from '../types';
 
 interface TaskManagerProps {
   selectedClass: Class | null;
