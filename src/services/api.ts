@@ -2,7 +2,7 @@
 const isDevelopment = process.env.NODE_ENV === 'development';
 const API_BASE_URL = isDevelopment 
   ? 'http://localhost:5001/api'
-  : 'https://agenda-backend-production-xxxx.up.railway.app/api'; // 👈 Cambia esto por tu URL real de Railway
+  : 'https://agendaweb-production.up.railway.app/api'; // 👈 URL real de Railway
 
 // Types for API responses
 interface User {
