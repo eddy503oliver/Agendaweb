@@ -1,4 +1,8 @@
-const API_BASE_URL = 'http://localhost:5001/api';
+// Configuración de la API para desarrollo y producción
+const isDevelopment = import.meta.env.DEV;
+const API_BASE_URL = isDevelopment 
+  ? 'http://localhost:5001/api'
+  : 'https://tu-backend-url.com/api'; // 👈 Cambia esto por tu URL de producción
 
 // Types for API responses
 interface ApiResponse<T> {

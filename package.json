@@ -1,15 +1,20 @@
+
 {
+  "homepage": "https://eddy503oliver.github.io/Agendaweb",
   "name": "agenda-universitaria",
   "version": "1.0.0",
   "description": "Agenda para gestionar horarios de clase y tareas universitarias",
   "main": "index.js",
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "server": "node server/index.js",
     "dev:server": "nodemon server/index.js",
-    "dev:full": "concurrently \"npm run dev\" \"npm run dev:server\""
+    "dev:full": "concurrently \"npm run dev\" \"npm run dev:server\"",
+    "build:prod": "npm run build && npm run deploy"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -32,6 +37,7 @@
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.0.3",
     "concurrently": "^9.2.0",
+    "gh-pages": "^6.3.0",
     "nodemon": "^3.1.10",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"

@@ -1,143 +1,174 @@
-<<<<<<< HEAD
-# Agendaweb
-agenda web para llevar control de horario y tareas
-=======
 # 📚 Agenda Universitaria
 
-Una aplicación web moderna para gestionar horarios de clase y tareas universitarias de manera eficiente.
+Una aplicación web completa para gestionar horarios de clase y tareas universitarias con autenticación de usuarios y persistencia de datos.
 
-## ✨ Características
+## 🚀 Demo en Vivo
 
-### 📅 Gestión de Horarios de Clase
-- **Agregar clases** con nombre, profesor, día, horario y aula
-- **Editar información** de clases existentes
-- **Eliminar clases** con confirmación
-- **Códigos de color** personalizables para cada clase
-- **Vista organizada** por días de la semana
+**Frontend (GitHub Pages):** https://eddy503oliver.github.io/Agendaweb
 
-### ✅ Gestión de Tareas
-- **Crear tareas** con título, descripción y fecha de entrega
-- **Establecer prioridades** (Alta, Media, Baja)
-- **Marcar como completadas** con un clic
-- **Relacionar tareas** con clases específicas
-- **Alertas visuales** para tareas vencidas
-- **Ordenamiento inteligente** por prioridad y fecha
+**Backend:** [Configurar URL de producción]
 
-### 🎨 Interfaz Moderna
-- **Diseño responsive** que funciona en móviles y desktop
-- **Gradientes y animaciones** suaves
-- **Iconos intuitivos** de Lucide React
-- **Persistencia de datos** en localStorage
-- **Navegación por pestañas** entre horarios y tareas
+## 🛠️ Tecnologías Utilizadas
 
-## 🚀 Instalación
-
-1. **Clona o descarga** este proyecto
-2. **Instala las dependencias**:
-   ```bash
-   npm install
-   ```
-
-3. **Inicia el servidor de desarrollo**:
-   ```bash
-   npm run dev
-   ```
-
-4. **Abre tu navegador** en `http://localhost:3000`
-
-## 📦 Dependencias
-
-- **React 18** - Framework de interfaz de usuario
+### Frontend
+- **React 18** - Biblioteca de JavaScript para interfaces de usuario
 - **TypeScript** - Tipado estático para JavaScript
 - **Vite** - Herramienta de construcción rápida
 - **Lucide React** - Iconos modernos
 - **date-fns** - Manipulación de fechas
 
-## 🎯 Cómo Usar
+### Backend
+- **Node.js** - Runtime de JavaScript
+- **Express.js** - Framework web
+- **SQLite3** - Base de datos ligera
+- **bcryptjs** - Hashing de contraseñas
+- **jsonwebtoken** - Autenticación JWT
+- **cors** - Middleware CORS
 
-### Gestión de Horarios
-1. Haz clic en la pestaña **"Horarios de Clase"**
-2. Presiona **"Agregar Nueva Clase"**
-3. Completa el formulario con:
-   - Nombre de la clase
-   - Profesor
-   - Día de la semana
-   - Horario (inicio y fin)
-   - Aula
-   - Color personalizado
-4. Guarda la clase
-5. Edita o elimina clases usando los botones de acción
+## 📋 Funcionalidades
 
-### Gestión de Tareas
-1. Haz clic en la pestaña **"Tareas"**
-2. Presiona **"Agregar Nueva Tarea"**
-3. Completa el formulario con:
-   - Título de la tarea
-   - Descripción (opcional)
-   - Fecha de entrega
-   - Prioridad
-   - Clase relacionada (opcional)
-4. Marca tareas como completadas haciendo clic en el círculo
-5. Edita o elimina tareas según necesites
+- ✅ **Autenticación de usuarios** (registro/login)
+- ✅ **Gestión de horarios de clase**
+- ✅ **Gestión de tareas universitarias**
+- ✅ **Relación entre clases y tareas**
+- ✅ **Dashboard con estadísticas**
+- ✅ **Filtrado de tareas** (pendientes, completadas, vencidas)
+- ✅ **Diseño responsive**
+- ✅ **Persistencia de datos**
 
-## 💾 Almacenamiento
+## 🚀 Instalación y Uso
 
-Los datos se guardan automáticamente en el **localStorage** del navegador, por lo que:
-- ✅ No se pierden al cerrar el navegador
-- ✅ Funciona sin conexión a internet
-- ✅ Los datos son privados y locales
+### Desarrollo Local
 
-## 🎨 Personalización
-
-### Colores de Clases
-Cada clase puede tener un color personalizado de una paleta predefinida:
-- Azul (#667eea)
-- Púrpura (#764ba2)
-- Rosa (#f093fb)
-- Rojo (#f5576c)
-- Azul claro (#4facfe)
-- Cian (#00f2fe)
-- Verde (#43e97b)
-- Verde azulado (#38f9d7)
-
-### Prioridades de Tareas
-- **Alta** (Rojo) - Tareas urgentes
-- **Media** (Amarillo) - Tareas normales
-- **Baja** (Verde) - Tareas de baja prioridad
-
-## 📱 Responsive Design
-
-La aplicación está optimizada para:
-- 📱 **Móviles** (320px+)
-- 📱 **Tablets** (768px+)
-- 💻 **Desktop** (1024px+)
-
-## 🔧 Scripts Disponibles
-
+1. **Clonar el repositorio:**
 ```bash
-npm run dev      # Inicia el servidor de desarrollo
-npm run build    # Construye la aplicación para producción
-npm run preview  # Previsualiza la versión de producción
+git clone https://github.com/eddy503oliver/Agendaweb.git
+cd Agendaweb
 ```
 
-## 🛠️ Tecnologías Utilizadas
+2. **Instalar dependencias:**
+```bash
+npm install
+```
 
-- **Frontend**: React 18 + TypeScript
-- **Build Tool**: Vite
-- **Styling**: CSS3 con Grid y Flexbox
-- **Icons**: Lucide React
-- **Date Handling**: date-fns
-- **Storage**: localStorage API
+3. **Configurar variables de entorno:**
+```bash
+# Crear archivo .env en la raíz del proyecto
+echo "PORT=5001" > .env
+echo "JWT_SECRET=tu-secreto-super-seguro-cambia-esto-en-produccion" >> .env
+echo "NODE_ENV=development" >> .env
+```
+
+4. **Ejecutar en desarrollo:**
+```bash
+# Solo frontend
+npm run dev
+
+# Solo backend
+npm run dev:server
+
+# Ambos (frontend + backend)
+npm run dev:full
+```
+
+### Despliegue en GitHub Pages
+
+1. **Configurar el backend en un servicio externo** (Render, Railway, Heroku, etc.)
+
+2. **Actualizar la URL de la API en producción:**
+   - Editar `src/services/api.ts`
+   - Cambiar `https://tu-backend-url.com/api` por tu URL real
+
+3. **Desplegar:**
+```bash
+npm run build:prod
+```
+
+## 📁 Estructura del Proyecto
+
+```
+agenda/
+├── 📁 src/                    # Código fuente del frontend
+│   ├── 📁 components/         # Componentes React
+│   │   ├── Login.tsx         # Autenticación
+│   │   ├── ClassManager.tsx  # Gestión de clases
+│   │   ├── TaskManager.tsx   # Gestión de tareas
+│   │   └── Dashboard.tsx     # Panel principal
+│   ├── 📁 services/          # Servicios de API
+│   │   └── api.ts           # Cliente HTTP
+│   ├── App.tsx              # Componente principal
+│   ├── main.tsx             # Punto de entrada
+│   ├── types.ts             # Definiciones TypeScript
+│   └── index.css            # Estilos globales
+├── 📁 server/               # Código del backend
+│   ├── index.js             # Servidor Express
+│   └── database.sqlite      # Base de datos
+├── 📄 package.json          # Dependencias y scripts
+├── 📄 vite.config.ts        # Configuración de Vite
+├── 📄 tsconfig.json         # Configuración TypeScript
+└── 📄 .env                  # Variables de entorno
+```
+
+## 🔧 Configuración del Backend
+
+### Opciones de Despliegue
+
+1. **Render (Recomendado):**
+   - Conectar repositorio de GitHub
+   - Configurar variables de entorno
+   - Deploy automático
+
+2. **Railway:**
+   - Importar desde GitHub
+   - Configurar variables de entorno
+   - Deploy automático
+
+3. **Heroku:**
+   - Conectar repositorio
+   - Configurar buildpacks
+   - Variables de entorno
+
+### Variables de Entorno Requeridas
+
+```env
+PORT=5001
+JWT_SECRET=tu-secreto-super-seguro-cambia-esto-en-produccion
+NODE_ENV=production
+```
+
+## 📱 Características de UX/UI
+
+- **Diseño moderno** con gradientes y efectos glassmorphism
+- **Animaciones suaves** con CSS transitions
+- **Iconos intuitivos** para mejor usabilidad
+- **Feedback visual** en interacciones
+- **Responsive design** para móviles y tablets
+- **Dashboard interactivo** con filtros dinámicos
+
+## 🔒 Seguridad
+
+- **Hashing de contraseñas** con bcrypt
+- **Tokens JWT** para autenticación
+- **Validación de datos** en frontend y backend
+- **CORS configurado** para seguridad
+- **Variables de entorno** para configuraciones sensibles
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir un Pull Request
 
 ## 📄 Licencia
 
-MIT License - Libre para uso personal y comercial.
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
 
-## 🤝 Contribuciones
+## 👨‍💻 Autor
 
-¡Las contribuciones son bienvenidas! Si encuentras un bug o tienes una sugerencia, no dudes en crear un issue o pull request.
+**Tu Nombre** - [GitHub](https://github.com/eddy503oliver)
 
 ---
 
-**¡Organiza tu vida universitaria de manera eficiente con esta agenda digital!** 📚✨ 
->>>>>>> 8a11710 (primer commit)
+⭐ Si te gusta este proyecto, ¡dale una estrella en GitHub!
