@@ -9,6 +9,7 @@
     "create-admin": "node create-admin.js",
     "fix-admin": "node fix-admin.js",
     "debug-admin": "node debug-admin.js",
+    "test-server": "node test-server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

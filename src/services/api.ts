@@ -4,6 +4,11 @@ const API_BASE_URL = isDevelopment
   ? 'http://localhost:5001/api'
   : 'https://agendaweb-production.up.railway.app/api'; // 👈 URL real de Railway
 
+console.log('🌐 Configuración de API:');
+console.log('   - isDevelopment:', isDevelopment);
+console.log('   - API_BASE_URL:', API_BASE_URL);
+console.log('   - window.location.hostname:', window.location.hostname);
+
 // Types for API responses
 interface User {
   id: number;
