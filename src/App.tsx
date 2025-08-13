@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard';
 import ClassManager from './components/ClassManager';
 import TaskManager from './components/TaskManager';
 import AdminPanel from './components/AdminPanel';
+import ChangePassword from './components/ChangePassword';
 import { api } from './services/api';
 import './index.css';
 
@@ -18,6 +19,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<'dashboard' | 'classes' | 'tasks' | 'admin'>('dashboard');
   const [error, setError] = useState<string | null>(null);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -118,6 +120,13 @@ function App() {
                   )}
                 </div>
                 <button
+                  onClick={() => setShowChangePassword(true)}
+                  className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                  title="Cambiar contraseña"
+                >
+                  🔐
+                </button>
+                <button
                   onClick={handleLogout}
                   className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
                 >
@@ -136,6 +145,11 @@ function App() {
         {currentView === 'tasks' && <TaskManager />}
         {currentView === 'admin' && user.role === 'admin' && <AdminPanel />}
       </main>
+
+      {/* Change Password Modal */}
+      {showChangePassword && (
+        <ChangePassword onClose={() => setShowChangePassword(false)} />
+      )}
     </div>
   );
 }
