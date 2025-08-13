@@ -4,7 +4,11 @@ import { classesAPI, tasksAPI } from '../services/api';
 
 type TaskFilter = 'all' | 'pending' | 'completed' | 'overdue' | null;
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  userRole?: string;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ userRole }) => {
   const [classes, setClasses] = useState<Class[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,9 +99,37 @@ const Dashboard: React.FC = () => {
         <p>Resumen de tu agenda universitaria</p>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      {/* Admin Quick Stats */}
+      {userRole === 'admin' && (
+        <div className="admin-quick-stats mb-6">
+          <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg p-4">
+            <h3 className="text-lg font-semibold text-red-800 mb-3 flex items-center">
+              👑 Acceso de Administrador
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-600">👥</div>
+                <p className="text-sm text-red-700">Gestionar Usuarios</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-600">📊</div>
+                <p className="text-sm text-red-700">Ver Estadísticas</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-600">🔧</div>
+                <p className="text-sm text-red-700">Control Total</p>
+              </div>
+            </div>
+            <div className="mt-3 text-center">
+              <p className="text-xs text-red-600">
+                Haz clic en "👑 Panel Admin" para acceder a las funciones de administrador
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Statistics Cards */}
+      {/* Task Statistics */}
       <div className="stats-grid">
         <div className="stat-card">
           <div className="stat-icon">📚</div>

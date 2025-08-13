@@ -100,11 +100,11 @@ function App() {
                     onClick={() => setCurrentView('admin')}
                     className={`px-3 py-2 rounded-md text-sm font-medium ${
                       currentView === 'admin'
-                        ? 'bg-red-100 text-red-700'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-red-100 text-red-700 border-2 border-red-300'
+                        : 'bg-red-50 text-red-600 hover:bg-red-100 border-2 border-red-200'
                     }`}
                   >
-                    👑 Admin
+                    👑 Panel Admin
                   </button>
                 )}
               </div>
@@ -114,8 +114,8 @@ function App() {
                 <div className="text-sm text-gray-700">
                   <span className="font-medium">{user.username}</span>
                   {user.role === 'admin' && (
-                    <span className="ml-2 px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                      👑 Admin
+                    <span className="ml-2 px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full font-bold border border-red-300">
+                      👑 ADMIN
                     </span>
                   )}
                 </div>
@@ -138,9 +138,28 @@ function App() {
         </div>
       </nav>
 
+      {/* Admin Banner */}
+      {user.role === 'admin' && (
+        <div className="bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">👑</span>
+              <div>
+                <h3 className="font-bold text-lg">Modo Administrador</h3>
+                <p className="text-red-100 text-sm">Tienes acceso completo al sistema</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-red-100">Usuario: {user.username}</p>
+              <p className="text-xs text-red-200">ID: {user.id}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 px-4">
-        {currentView === 'dashboard' && <Dashboard />}
+        {currentView === 'dashboard' && <Dashboard userRole={user.role} />}
         {currentView === 'classes' && <ClassManager />}
         {currentView === 'tasks' && <TaskManager />}
         {currentView === 'admin' && user.role === 'admin' && <AdminPanel />}

@@ -135,6 +135,7 @@ const AdminPanel: React.FC = () => {
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-800">👥 Gestión de Usuarios</h2>
+            <p className="text-sm text-gray-600 mt-1">Administra usuarios y sus roles</p>
           </div>
           
           <div className="overflow-x-auto">
@@ -209,6 +210,64 @@ const AdminPanel: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* Admin Actions */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">🔧 Acciones de Administrador</h3>
+            <div className="space-y-3">
+              <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                <div className="flex items-center">
+                  <span className="text-xl mr-3">📊</span>
+                  <div>
+                    <p className="font-medium text-gray-800">Exportar Datos</p>
+                    <p className="text-sm text-gray-600">Descargar reportes del sistema</p>
+                  </div>
+                </div>
+              </button>
+              <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                <div className="flex items-center">
+                  <span className="text-xl mr-3">🔍</span>
+                  <div>
+                    <p className="font-medium text-gray-800">Auditoría</p>
+                    <p className="text-sm text-gray-600">Ver logs de actividad</p>
+                  </div>
+                </div>
+              </button>
+              <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                <div className="flex items-center">
+                  <span className="text-xl mr-3">⚙️</span>
+                  <div>
+                    <p className="font-medium text-gray-800">Configuración</p>
+                    <p className="text-sm text-gray-600">Ajustes del sistema</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">📈 Información del Sistema</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Versión:</span>
+                <span className="font-medium">1.0.0</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Base de Datos:</span>
+                <span className="font-medium text-green-600">PostgreSQL</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Estado:</span>
+                <span className="font-medium text-green-600">● Activo</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Última Actualización:</span>
+                <span className="font-medium">{new Date().toLocaleDateString('es-ES')}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
