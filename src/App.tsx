@@ -30,12 +30,20 @@ function App() {
 
   const handleLogin = async (token: string) => {
     try {
+      console.log('🔑 Token recibido:', token);
       localStorage.setItem('token', token);
+      
+      console.log('📞 Llamando a /auth/me...');
       const userData = await api.get('/auth/me');
+      console.log('👤 Datos del usuario recibidos:', userData);
+      
       setUser(userData);
       setError(null);
+      
+      console.log('✅ Usuario establecido en el estado:', userData);
+      console.log('🎭 Rol del usuario:', userData.role);
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('❌ Login error:', err);
       setError('Error al iniciar sesión');
       localStorage.removeItem('token');
     }
