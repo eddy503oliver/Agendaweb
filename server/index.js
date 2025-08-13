@@ -29,17 +29,26 @@ initializeDatabase();
 
 // Authentication middleware
 function authenticateToken(req, res, next) {
+  console.log('🔐 Middleware de autenticación ejecutándose...');
+  console.log('📋 Headers recibidos:', req.headers);
+  
   const authHeader = req.headers['authorization'];
+  console.log('🔑 Authorization header:', authHeader);
+  
   const token = authHeader && authHeader.split(' ')[1];
+  console.log('🎫 Token extraído:', token ? token.substring(0, 50) + '...' : 'NO TOKEN');
 
   if (!token) {
+    console.log('❌ No se encontró token');
     return res.status(401).json({ error: 'Access token required' });
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
+      console.log('❌ Error verificando token:', err.message);
       return res.status(403).json({ error: 'Invalid token' });
     }
+    console.log('✅ Token válido, usuario:', user);
     req.user = user;
     next();
   });
@@ -146,15 +155,25 @@ app.post('/api/auth/login', async (req, res) => {
 // Get current user info
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
   try {
+    console.log('👤 Ruta /auth/me ejecutándose...');
+    console.log('🔍 Usuario del token:', req.user);
+    console.log('🆔 ID del usuario:', req.user.id);
+    
     const result = await pool.query('SELECT id, username, email, role FROM users WHERE id = $1', [req.user.id]);
+    console.log('📊 Resultado de la consulta:', result.rows);
     
     if (result.rows.length === 0) {
+      console.log('❌ Usuario no encontrado en la base de datos');
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json(result.rows[0]);
+    const userData = result.rows[0];
+    console.log('✅ Usuario encontrado:', userData);
+    console.log('🎭 Rol del usuario:', userData.role);
+    
+    res.json(userData);
   } catch (error) {
-    console.error('Error fetching user:', error);
+    console.error('❌ Error fetching user:', error);
     res.status(500).json({ error: 'Error fetching user' });
   }
 });

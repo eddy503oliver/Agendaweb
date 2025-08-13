@@ -42,10 +42,15 @@ interface Task {
 // Helper function to get auth headers
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
-  return {
+  console.log('🔑 Token en localStorage:', token ? token.substring(0, 50) + '...' : 'NO HAY TOKEN');
+  
+  const headers = {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` })
   };
+  
+  console.log('📋 Headers generados:', headers);
+  return headers;
 };
 
 // Authentication API
@@ -320,13 +325,23 @@ export const adminAPI = {
 // Generic API helper
 export const api = {
   get: async (endpoint: string): Promise<any> => {
+    console.log('🌐 Llamando GET a:', `${API_BASE_URL}${endpoint}`);
+    
+    const headers = getAuthHeaders();
+    console.log('📤 Headers enviados:', headers);
+    
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: getAuthHeaders(),
+      headers: headers,
     });
 
+    console.log('📥 Response status:', response.status);
+    console.log('📥 Response headers:', response.headers);
+    
     const data = await response.json();
+    console.log('📥 Response data:', data);
     
     if (!response.ok) {
+      console.error('❌ Error en la petición:', response.status, data);
       throw new Error(data.error || 'Error en la petición');
     }
 
